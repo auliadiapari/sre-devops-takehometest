@@ -1,0 +1,8 @@
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: prometheus  # This matches the Prometheus instance
+
+mongodb:
+  uri: "mongodb://mongo.default.svc.cluster.local:27017"
+  # Replace with your MongoDB service name and namespace

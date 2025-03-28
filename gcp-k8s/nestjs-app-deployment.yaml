@@ -1,0 +1,63 @@
+# nestjs-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestjs-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nestjs-app
+  template:
+    metadata:
+      labels:
+        app: nestjs-app
+    spec:
+      containers:
+      - name: nestjs-app
+        image: asia-southeast2-docker.pkg.dev/spontaneous-416806/nestjs-app/nestjs-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGO_URL
+          value: "mongodb://mongo:27017/admin"
+        # - name: MONGO_USERNAME
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: mongo-secrets
+        #       key: username
+        # - name: MONGO_PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: mongo-secrets
+        #       key: password
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+# nestjs-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nestjs-app
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+  labels:
+    app: nestjs-app
+    release: prometheus
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    name: http
+    targetPort: 3000
+  selector:
+    app: nestjs-app
