@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup
+spec:
+  schedule: "0 2 * * *"  # Runs daily at 2 AM - adjust as needed
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: mongodb-backup-sa
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: mongodb-backup-pvc
+          containers:
+          - name: mongodb-backup
+            image: google/cloud-sdk:latest  # Includes gsutil and we'll add mongodump
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+            env:
+            - name: MONGODB_URI
+              value: "mongodb://username:password@mongodb-service:27017"  # Replace with your connection string
+            - name: GCS_BUCKET
+              value: "gs://your-bucket-name"  # Replace with your GCS bucket
+            - name: BACKUP_PREFIX
+              value: "mongodb-backups/production"  # Customize as needed
+            command: ["/bin/sh", "-c"]
+            args:
+            - |
+              # Install mongodump
+              apt-get update && apt-get install -y mongodb-database-tools && rm -rf /var/lib/apt/lists/*
+              
+              # Create timestamp
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              
+              # Create backup directory
+              mkdir -p /backup/$TIMESTAMP
+              
+              # Perform mongodump
+              echo "Starting mongodump..."
+              mongodump --uri="$MONGODB_URI" --out=/backup/$TIMESTAMP
+              
+              # Compress backup
+              echo "Compressing backup..."
+              tar -czvf /backup/$TIMESTAMP.tar.gz -C /backup $TIMESTAMP
+              
+              # Upload to GCS
+              echo "Uploading to GCS..."
+              gsutil cp /backup/$TIMESTAMP.tar.gz $GCS_BUCKET/$BACKUP_PREFIX/$TIMESTAMP.tar.gz
+              
+              # Clean up
+              echo "Cleaning up..."
+              rm -rf /backup/$TIMESTAMP /backup/$TIMESTAMP.tar.gz
+              
+              echo "Backup completed successfully!"
