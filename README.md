@@ -20,8 +20,31 @@ This repository contains my solution tp the Infra take-home test.
 
 * **Steps:**
   * Build the image using Dockerfile, push to artifact registry/dockerhub
+    ```sh
+    docker build -f ./backend -t nestjs-app:latest .
+
+    if using artifact registry 
+
+    docker tag nestjs-app:latest asia-southeast2-docker.pkg.dev/<gcp-project>/<repository>/nestjs-app:latest
+    docker push asia-southeast2-docker.pkg.dev/<gcp-project>/<repository>/nestjs-app:latest
+
+    if using dockerhub
+
+    docker tag nestjs-app:latest <username>/nestjs-app:latest
+    docker push <username>/nestjs-app:latest
+    ```
   * Deploy the kubernetes manifest to the GKE or locally (Minikube & kind need to be adjust)
+    ```sh
+    kubectl apply -f mongo-statefulset.yaml
+    kubectl apply -f redis-deployment.yaml
+    kubectl apply -f nestjs-app-deployment.yaml
+    kubectl apply nestjs-ingress.yaml
+    ```
+
   * Use the Load Balancer IP to access the application or locally using minikube tunnel or localhost.
+    ![LB_IP/metrics](nestjs-app-endpoint-metrics.png)
+    ![LB_IP/health](nestjs-app-endpoint-health.png)
+
 
 * **Further improvements:**
   * ____
