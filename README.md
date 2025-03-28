@@ -23,12 +23,12 @@ This repository contains my solution tp the Infra take-home test.
     ```sh
     docker build -f ./backend -t nestjs-app:latest .
 
-    if using artifact registry 
+    #if using artifact registry 
 
     docker tag nestjs-app:latest asia-southeast2-docker.pkg.dev/<gcp-project>/<repository>/nestjs-app:latest
     docker push asia-southeast2-docker.pkg.dev/<gcp-project>/<repository>/nestjs-app:latest
 
-    if using dockerhub
+    #if using dockerhub
 
     docker tag nestjs-app:latest <username>/nestjs-app:latest
     docker push <username>/nestjs-app:latest
