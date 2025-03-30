@@ -41,6 +41,9 @@ This repository contains my solution tp the Infra take-home test.
     kubectl apply nestjs-ingress.yaml
     ```
 
+  * Firewall & Healthcheck (GCP)
+    Need to open http port, and the healthcheck should be use HTTP with /health endpoint to make it healthy checked by the load balancing, by default access, it returns 404 for the app, 
+
   * Use the Load Balancer IP to access the application or locally using minikube tunnel or localhost.
     ![LB_IP/metrics](nestjs-app-endpoint-metrics.png)
     ![LB_IP/health](nestjs-app-endpoint-health.png)
